@@ -128,3 +128,19 @@ def swing_shot():
 
 
 swing_shot()
+
+
+# underside of the grip (bed face): shell, ribs, nut pocket
+def underside_shot():
+    reset()
+    load({"arm": (0, 0, 500), "bolt": (0, 0, 500), "washer": (0, 0, 500), "nut": (0, 0, 500),
+          "weight_cup": (0, 0, 500), "weight_lid": (0, 0, 500)})
+    add_light((60, 80, -300), 90000, 200)
+    add_light((-200, -150, -250), 50000, 200)
+    camera((50, 45, -600), (50, 45, 0), ortho=160)
+    c = bpy.context.scene.camera
+    c.rotation_euler = (math.pi, 0, 0)     # look up the +Z axis, Y up in the image
+    render("preview_grip_underside.png")
+
+
+underside_shot()

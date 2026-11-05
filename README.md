@@ -11,13 +11,13 @@ Everything is parametric: edit the numbers at the top of `model.py`, run the two
 |---|---|
 | `trainer_assembly.step` | **The one 3D file**: grip, steel arm, weight cup + lid, bolt, washer, nut, assembled, arm hanging straight down parallel to the grip's left end |
 | `trainer_assembly.3mf` | Same assembly (each part a separate coloured object) for slicers |
-| `grip.stl` | Grip, printed flat on the bed (bed face down, arm pocket facing up) |
+| `grip.stl` | Grip, printed flat on the bed (bed face down, arm pocket facing up). **Hollow underside**: a 4 mm shell with ribs, not a solid block |
 | `weight.stl` | Weight cup, open side up |
 | `weight_lid.stl` | Weight lid, textured face up |
 | `arm_printed.stl` | Printed stand-in arm (5 mm thick) - **weaker than steel** |
 | `grip_for_printed_arm.stl`, `weight_for_printed_arm.stl` | Grip and cup with the slot/tunnel sized for the 5 mm printed arm (use these *with* `arm_printed.stl`) |
 | `arm_steel_drawing.svg` / `.pdf` | Flat drawing of the steel arm, 1:1 on A4 landscape, with dimensions and hole positions |
-| `preview_top.png`, `preview_34.png`, `preview_exploded.png`, `preview_swing_range.png` | Blender renders (the last overlays the arm at 0, 30, 60 and 95 degrees) |
+| `preview_top.png`, `preview_34.png`, `preview_exploded.png`, `preview_swing_range.png`, `preview_grip_underside.png` | Blender renders (swing range overlays the arm at 0, 30, 60 and 95 degrees; the underside shot shows the hollow grip and its ribs) |
 | `BUILD_GUIDE.md`, `HARDWARE.md` | Build instructions; hardware, material and filler options |
 | `model.py` | CadQuery model (all dimensions at the top) |
 | `make_outputs.py` | Builds the 3MF + drawing and runs the watertight checks |
@@ -33,6 +33,7 @@ These are estimates, scaled against an adult hand (palm ~85 mm wide, fingers 18-
 | `GRIP_SWEEP` | 64 deg | Both end faces are radial, about 60-64 deg apart |
 | `GRIP_WIDTH` | 50 mm | Radial width of the fan (inner radius 60 mm); a chunky 45-55 mm block fills the hand |
 | `GRIP_T` | 28 mm | 25-30 mm thick so it fills the hand; this also leaves room to sink the bolt head |
+| `SHELL_WALL` / `TOP_THICK` / `RIB_T` / `RIB_STEP` | 4 / 5 / 3 mm / 8 deg | Hollow-underside shell: set `HOLLOW_UNDERSIDE = False` for a solid grip |
 | `RIM_FILLET` | 9 mm | Rounded rim on the outer curve; the bed edge only gets a 0.8 mm chamfer, since a rounded bottom would overhang |
 | `PIVOT_FROM_END` / `PIVOT_FROM_RIM` | 14 / 25 mm | Pivot sits near the left end, half-way across the fan |
 | `ARM_W` x `ARM_T` | 20 x 3 mm | Standard flat bar |
@@ -57,7 +58,7 @@ Cavity of the weight is about 14.6 cm3, roughly 60-70 g of steel shot, more with
 ## Print settings
 
 - PETG or PLA+, 0.2 mm layers, 4 walls (>= 1.6 mm).
-- **Grip:** 30-40 % infill (gyroid or cubic), no supports. The hex pocket bridges about 12 mm; if it sags, use a sacrificial layer or a slightly slower first bridge.
+- **Grip:** the underside is hollow (4 mm outer wall, 3 mm radial and ring ribs standing on the bed, 5 mm top skin, solid bosses round the nut pocket and screw hole), so it is light and rim-shaped, about 71 cm3 of plastic instead of 122. 15-20 % infill is plenty; walls and ribs carry the load. No supports: the roof only bridges the 13-20 mm cells between ribs. The hex pocket bridges about 12 mm; if it sags, use a sacrificial layer or a slightly slower first bridge.
 - **Weight cup:** 100 % infill, or ~20 % if you fill it with shot. The arm tunnel bridges about 20 mm: slow that bridge and use full cooling. Do not use supports inside the tunnel.
 - **Lid:** 100 % infill, textured face up.
 - **Printed arm:** a stand-in only. 5 mm of PETG or PLA bends and snaps far sooner than 3 mm steel. Use 100 % infill, orient flat as exported, and expect it to break if you really snap hard.

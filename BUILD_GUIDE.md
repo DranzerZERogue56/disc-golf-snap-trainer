@@ -9,7 +9,7 @@ All sizes are estimates. Before printing, hold a ruler to your hand:
 - Can you wrap your fingers around a 28 mm thick grip comfortably? (default `GRIP_T = 28`)
 
 If not, edit the PARAMETERS block at the top of `model.py` and rebuild (see "Changing the sizes" in the README).
-To test cheaply, print only the grip first at 15 % infill.
+To test cheaply, print only the grip first.
 
 ## 2. Print the parts
 
@@ -17,13 +17,13 @@ Settings: PETG or PLA+, 0.2 mm layers, 4 walls.
 
 | Part | File | Orientation | Infill |
 |---|---|---|---|
-| Grip | `grip.stl` | as exported: bed face down, step facing up | 30-40 % |
+| Grip | `grip.stl` | as exported: bed face down (the hollow ribbed side), step facing up | 15-20 % (hollow shell with ribs) |
 | Weight cup | `weight.stl` | as exported: open side up | 100 %, or about 20 % if filled with shot |
 | Weight lid | `weight_lid.stl` | as exported: textured face up | 100 % |
 | Printed arm only | `arm_printed.stl` + `grip_for_printed_arm.stl` + `weight_for_printed_arm.stl` | as exported | 100 % |
 
 Notes:
-- No supports are needed. The nut pocket (about 12 mm wide) and the arm tunnel in the cup wall (about 20 mm wide) are bridges: print them slowly with full cooling.
+- No supports are needed, including under the grip: its underside is a hollow shell with ribs standing on the bed. The nut pocket (about 12 mm wide) and the arm tunnel in the cup wall (about 20 mm wide) are bridges: print them slowly with full cooling.
 - Before gluing anything, test-fit the nut in its pocket and the arm in the tunnel.
 
 ## 3. Make the steel arm
