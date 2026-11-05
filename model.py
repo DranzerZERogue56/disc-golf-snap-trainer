@@ -23,14 +23,10 @@ GRIP_T = 28.0           # thickness = height of the grip (chunky, fills the hand
 RIM_FILLET = 9.0        # rounding of the outer top edge (the "disc rim")
 INNER_FILLET = 3.0      # rounding of the concave inner top edge
 BOTTOM_CHAMFER = 0.8    # chamfer on the bed-side edge (avoids elephant foot)
-HOLLOW_UNDERSIDE = True # hollow the bed-side into a thin shell + ribs (a rim shape, not a solid block)
-SHELL_WALL = 4.0        # outer wall thickness of the hollow grip
-TOP_THICK = 5.0         # solid top skin thickness above the hollow
-FLOOR_THICK = 4.0       # solid thickness under the arm pocket floor
-RIB_T = 3.0             # rib thickness
-RIB_STEP = 8.0          # radial rib spacing, degrees (cells stay small enough to bridge)
-PIVOT_BOSS_R = 11.0     # solid boss around the pivot / nut pocket
-SCREW_BOSS_R = 4.5      # solid boss around the small screw hole
+DISC_STYLE = True       # flat top plate + deep downward lip on the outer curve (fingers hook under it)
+PLATE_T = 8.0           # thickness of the flat top plate
+LIP_T = 6.0             # thickness of the downward lip (skirt) along the outer curve
+PAD_MARGIN = 6.0        # solid arm-mounting pad extends this far beyond the arm pocket
 PIVOT_FROM_END = 14.0   # pivot hole centre distance from the grip's end face
 PIVOT_FROM_RIM = 25.0   # pivot hole centre distance inward from the outer rim
 POCKET_SWING = 95.0     # free arm swing (deg) from the hanging pose, outward past the grip end
@@ -129,32 +125,22 @@ def sector_poly(r0, r1, a0, a1, step=1.0):
     return Polygon(outer + inner)
 
 
-def hollow_underside(g, pocket_poly, screw_pos):
-    """Cut the bed-side hollow: thin outer wall, solid top skin, radial + ring ribs standing on the bed,
-    solid bosses around the pivot and the screw hole. Open to the bed face, so no supports are needed:
-    the roof only bridges the small rib-to-rib cells."""
-    inset = sector_poly(R_IN, GRIP_R_OUT, A_RIGHT, A_LEFT).buffer(-SHELL_WALL, join_style=2)
-    ribs = []
-    a = A_RIGHT + RIB_STEP
-    while a < A_LEFT - 1e-6:
-        ribs.append(LineString([(0, 0), pol(300, a)]).buffer(RIB_T / 2, cap_style=2))
-        a += RIB_STEP
-    ring_r = GRIP_R_OUT - GRIP_WIDTH / 2
-    ribs.append(Point(0, 0).buffer(ring_r + RIB_T / 2, 128).difference(Point(0, 0).buffer(ring_r - RIB_T / 2, 128)))
-    keep = unary_union(ribs + [Point(PIVOT).buffer(PIVOT_BOSS_R, 32), Point(screw_pos).buffer(SCREW_BOSS_R, 24)])
-    zone_b = inset.intersection(pocket_poly.buffer(SHELL_WALL))   # under the arm pocket: low roof
-    zone_a = inset.difference(pocket_poly.buffer(SHELL_WALL))     # elsewhere: roof just under the top skin
-    for zone, top in ((zone_a, GRIP_T - TOP_THICK), (zone_b, Z_FLOOR - FLOOR_THICK)):
-        region = zone.difference(keep)
-        polys = [region] if region.geom_type == "Polygon" else list(region.geoms)
-        for p in polys:
-            if p.area < 4:
-                continue
-            p = p.simplify(0.05)
-            wp = cq.Workplane("XY").workplane(offset=-1).polyline(list(p.exterior.coords)[:-1]).close()
-            for ring in p.interiors:
-                wp = wp.polyline(list(ring.coords)[:-1]).close()
-            g = g.cut(wp.extrude(top + 1))
+def hollow_underside(g, pocket_poly):
+    """Disc-style underside: cut away everything under the flat top plate except the outer lip (which goes
+    all the way down) and a solid pad under the arm pocket. The cut is open to the inner curve and the two
+    ends, so fingers can hook in under the lip. Printed lip-down, so the plate roof needs support."""
+    cut = sector_poly(R_IN - 8, GRIP_R_OUT - LIP_T, A_RIGHT - 8, A_LEFT + 8)
+    region = cut.difference(pocket_poly.buffer(PAD_MARGIN))
+    region = region.buffer(-3).buffer(3)     # drop slivers narrower than 6 mm (pad merges into the lip)
+    polys = [region] if region.geom_type == "Polygon" else list(region.geoms)
+    for p in polys:
+        if p.area < 4:
+            continue
+        p = p.simplify(0.05)
+        wp = cq.Workplane("XY").workplane(offset=-1).polyline(list(p.exterior.coords)[:-1]).close()
+        for ring in p.interiors:
+            wp = wp.polyline(list(ring.coords)[:-1]).close()
+        g = g.cut(wp.extrude(GRIP_T - PLATE_T + 1))
     return g
 
 
@@ -182,12 +168,8 @@ def build_grip():
     pocket = cq.Workplane("XY").workplane(offset=Z_FLOOR).polyline(pts).close().extrude(SLOT_DEPTH + 1)
     g = g.cut(pocket)
 
-    # screw hole position (also needed for its boss)
-    ang = A_RIGHT + math.degrees(math.asin(SCREW_FROM_END / (GRIP_R_OUT - GRIP_WIDTH / 2)))
-    sp = pol(GRIP_R_OUT - GRIP_WIDTH / 2, ang)
-
-    if HOLLOW_UNDERSIDE:
-        g = hollow_underside(g, poly, sp)
+    if DISC_STYLE:
+        g = hollow_underside(g, poly)
 
     # pivot hole + captive hex nut pocket (open on the bed face, bolt head sits on top)
     g = g.cut(cq.Workplane("XY").center(*PIVOT).circle((BOLT_D + CLEAR) / 2).extrude(GRIP_T + 1))
@@ -195,7 +177,9 @@ def build_grip():
             .extrude(NUT_POCKET_H))
     g = g.cut(hexp)
 
-    # small screw hole near the far (right) end
+    # small screw hole near the far (right) end (through the top plate)
+    ang = A_RIGHT + math.degrees(math.asin(SCREW_FROM_END / (GRIP_R_OUT - GRIP_WIDTH / 2)))
+    sp = pol(GRIP_R_OUT - GRIP_WIDTH / 2, ang)
     g = g.cut(cq.Workplane("XY").center(*sp).circle(SCREW_D / 2).extrude(GRIP_T + 1))
     return g
 

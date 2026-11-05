@@ -11,13 +11,13 @@ Everything is parametric: edit the numbers at the top of `model.py`, run the two
 |---|---|
 | `trainer_assembly.step` | **The one 3D file**: grip, steel arm, weight cup + lid, bolt, washer, nut, assembled, arm hanging straight down parallel to the grip's left end |
 | `trainer_assembly.3mf` | Same assembly (each part a separate coloured object) for slicers |
-| `grip.stl` | Grip, printed flat on the bed (bed face down, arm pocket facing up). **Hollow underside**: a 4 mm shell with ribs, not a solid block |
+| `grip.stl` | Grip, printed flat on the bed (bed face down, arm pocket facing up). **Disc style**: flat top plate with a deep rounded lip along the outer curve and an open underside, like a disc rim. Print it lip-down **with supports** |
 | `weight.stl` | Weight cup, open side up |
 | `weight_lid.stl` | Weight lid, textured face up |
 | `arm_printed.stl` | Printed stand-in arm (5 mm thick) - **weaker than steel** |
 | `grip_for_printed_arm.stl`, `weight_for_printed_arm.stl` | Grip and cup with the slot/tunnel sized for the 5 mm printed arm (use these *with* `arm_printed.stl`) |
 | `arm_steel_drawing.svg` / `.pdf` | Flat drawing of the steel arm, 1:1 on A4 landscape, with dimensions and hole positions |
-| `preview_top.png`, `preview_34.png`, `preview_exploded.png`, `preview_swing_range.png`, `preview_grip_underside.png` | Blender renders (swing range overlays the arm at 0, 30, 60 and 95 degrees; the underside shot shows the hollow grip and its ribs) |
+| `preview_top.png`, `preview_34.png`, `preview_exploded.png`, `preview_swing_range.png`, `preview_grip_underside.png`, `preview_grip_lip.png`, `preview_grip_section.png` | Renders (swing range overlays the arm at 0, 30, 60 and 95 degrees; the other three show the open underside, the lip, and a cross-section) |
 | `BUILD_GUIDE.md`, `HARDWARE.md` | Build instructions; hardware, material and filler options |
 | `model.py` | CadQuery model (all dimensions at the top) |
 | `make_outputs.py` | Builds the 3MF + drawing and runs the watertight checks |
@@ -33,7 +33,7 @@ These are estimates, scaled against an adult hand (palm ~85 mm wide, fingers 18-
 | `GRIP_SWEEP` | 64 deg | Both end faces are radial, about 60-64 deg apart |
 | `GRIP_WIDTH` | 50 mm | Radial width of the fan (inner radius 60 mm); a chunky 45-55 mm block fills the hand |
 | `GRIP_T` | 28 mm | 25-30 mm thick so it fills the hand; this also leaves room to sink the bolt head |
-| `SHELL_WALL` / `TOP_THICK` / `RIB_T` / `RIB_STEP` | 4 / 5 / 3 mm / 8 deg | Hollow-underside shell: set `HOLLOW_UNDERSIDE = False` for a solid grip |
+| `PLATE_T` / `LIP_T` / `PAD_MARGIN` | 8 / 6 / 6 mm | Disc-style grip: flat top plate thickness, downward lip thickness on the outer curve, extra solid margin around the arm pocket. `DISC_STYLE = False` gives a solid block |
 | `RIM_FILLET` | 9 mm | Rounded rim on the outer curve; the bed edge only gets a 0.8 mm chamfer, since a rounded bottom would overhang |
 | `PIVOT_FROM_END` / `PIVOT_FROM_RIM` | 14 / 25 mm | Pivot sits near the left end, half-way across the fan |
 | `ARM_W` x `ARM_T` | 20 x 3 mm | Standard flat bar |
@@ -47,9 +47,13 @@ These are estimates, scaled against an adult hand (palm ~85 mm wide, fingers 18-
 
 Cavity of the weight is about 14.6 cm3, roughly 60-70 g of steel shot, more with a metal filler and epoxy.
 
+## How to hold it
+
+Like a disc golf disc: the flat top plate sits on the back of your fingers, your fingers curl over the rounded outer rim and hook inside the deep lip (the open underside is the space for your fingertips), and your thumb rests on the top plate near the arm. The arm hangs from the pivot end and swings away past the end of the grip.
+
 ## How it goes together
 
-1. The grip has a recessed step (about 8.4 mm deep) where the arm sits, a 6.3 mm pivot hole and a hex nut pocket open on the bed face. The nylock nut is **captive** in that pocket and sits above the bed face. The step is deep enough that the bolt head ends up 0.5 mm **below** the grip face, so nothing digs into the palm.
+1. The grip has a solid arm pad at the pivot end (the larger mounting area for the arm) with a recessed step (about 8.4 mm deep) where the arm sits, a 6.3 mm pivot hole and a hex nut pocket open on the bed face. The nylock nut is **captive** in that pocket and sits above the bed face. The step is deep enough that the bolt head ends up 0.5 mm **below** the grip face, so nothing digs into the palm.
 2. Bolt order from the top: head, washer, arm, then the grip floor, then the nut underneath. **Tighten only until snug, then back off about a quarter turn** so the arm swings freely; the nylock holds it.
 3. Slide the arm into the tunnel in the cup wall. It lies on the cup floor. Fill the cup with steel shot, coins or washers, adding epoxy or CA glue so nothing rattles. Epoxy also locks into the 4.3 mm hole near the arm tip. Press the lid onto its ledge and glue it.
 4. The small 3.4 mm hole near the far end of the grip is for an M3 screw (stop, lanyard or whatever you like).
@@ -58,7 +62,7 @@ Cavity of the weight is about 14.6 cm3, roughly 60-70 g of steel shot, more with
 ## Print settings
 
 - PETG or PLA+, 0.2 mm layers, 4 walls (>= 1.6 mm).
-- **Grip:** the underside is hollow (4 mm outer wall, 3 mm radial and ring ribs standing on the bed, 5 mm top skin, solid bosses round the nut pocket and screw hole), so it is light and rim-shaped, about 71 cm3 of plastic instead of 122. 15-20 % infill is plenty; walls and ribs carry the load. No supports: the roof only bridges the 13-20 mm cells between ribs. The hex pocket bridges about 12 mm; if it sags, use a sacrificial layer or a slightly slower first bridge.
+- **Grip:** print lip-down (as exported). **Turn supports ON** (touching build plate only; tree or normal, 10-15 % density): the flat top plate is an 20 mm roof over the open underside. The solid arm pad at the pivot end and the lip are self-supporting. 4 walls, 20-30 % infill.
 - **Weight cup:** 100 % infill, or ~20 % if you fill it with shot. The arm tunnel bridges about 20 mm: slow that bridge and use full cooling. Do not use supports inside the tunnel.
 - **Lid:** 100 % infill, textured face up.
 - **Printed arm:** a stand-in only. 5 mm of PETG or PLA bends and snaps far sooner than 3 mm steel. Use 100 % infill, orient flat as exported, and expect it to break if you really snap hard.

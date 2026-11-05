@@ -144,3 +144,18 @@ def underside_shot():
 
 
 underside_shot()
+
+
+# grip from below at an angle: shows the flat plate, the deep lip and the open underside
+def lip_shot():
+    reset()
+    far = {k: (0, 0, 500) for k in ("arm", "bolt", "washer", "nut", "weight_cup", "weight_lid")}
+    load(far)
+    add_light((100, -100, -250), 120000, 200)
+    add_light((-150, 150, -200), 60000, 200)
+    add_light((60, -80, 300), 60000, 200)
+    camera((150, -120, -150), (50, 50, 8), lens=45)
+    render("preview_grip_lip.png")
+
+
+lip_shot()
